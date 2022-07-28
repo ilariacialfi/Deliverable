@@ -1,4 +1,4 @@
-package eu.uniroma2.cialfi;
+package eu.uniroma2.cialfi.control;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,11 +25,9 @@ public class DataExtractor {
 	   public static HashMap<LocalDateTime, String> releaseID;
 	   public static ArrayList<LocalDateTime> releases;
 	   public static Integer numVersions;
-
-	public static void main(String[] args) throws IOException, JSONException {
-		   
-		   String projName ="BOOKKEEPER";
-		   //VEDIAMO SE FUNZIONA
+	   
+	   public static void extractCsv(String projName) throws IOException, JSONException{
+		
 		   //Fills the arraylist with releases dates and orders them
 		   //Ignores releases with missing dates
 		   releases = new ArrayList<LocalDateTime>();
@@ -95,7 +93,10 @@ public class DataExtractor {
 		            }
 		         }
 		         return;
-		   }
+	   }
+		
+		   
+		   
  
 	
 	   public static void addRelease(String strDate, String name, String id) {
@@ -129,6 +130,9 @@ public class DataExtractor {
 		      }
 		      return sb.toString();
 		   }
+
+
+	
 
 	
 }
