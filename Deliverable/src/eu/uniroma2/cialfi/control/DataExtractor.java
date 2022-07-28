@@ -115,7 +115,6 @@ public class DataExtractor {
 
 		//Get JSON API for closed bugs w/ AV in the project
 		do {
-			//query da fare
 			String newUrl = url + "&startAt=" + i.toString() + "&maxResults=" + total;
 			JSONObject newJson = JSONUtil.readJsonFromUrl(newUrl);
 			JSONArray issues = newJson.getJSONArray("issues");
