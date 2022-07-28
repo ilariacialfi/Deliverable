@@ -9,8 +9,11 @@ public class Main {
 
 	public static void main(String[] args) throws IOException, JSONException {
 
-		DataExtractor.extractCsv("BOOKKEEPER");
-		DataExtractor.extractCsv("ZOOKEEPER");
+		DataExtractor.extractVersion("BOOKKEEPER");
+		DataExtractor.extractVersion("ZOOKEEPER");
+		
+		//DataExtractor.createCSV("BOOKKEEPER");
+		//DataExtractor.createCSV("ZOOKEEPER");
 
 	}
 

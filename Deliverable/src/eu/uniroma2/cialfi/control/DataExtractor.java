@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import eu.uniroma2.cialfi.entity.Version;
 import eu.uniroma2.cialfi.util.JSONUtil;
 
 
@@ -22,39 +24,48 @@ public class DataExtractor {
 	public static ArrayList<LocalDateTime> releases;
 	public static Integer numVersions;
 
-	public static void extractCsv(String projName) throws IOException, JSONException{
+	public static void extractVersion(String projName) throws IOException, JSONException{
 
 		//Fills the arraylist with releases dates and orders them
 		//Ignores releases with missing dates
-		releases = new ArrayList<LocalDateTime>();
+		//releases = new ArrayList<LocalDateTime>();
+		//releaseNames = new HashMap<LocalDateTime, String>();
+		//releaseID = new HashMap<LocalDateTime, String> ();
+		
+		//create a list of versions with their attributes
+		List<Version> versionList = new ArrayList<>();
+		
 		Integer i;
 		String url = "https://issues.apache.org/jira/rest/api/2/project/" + projName;
 
 		JSONObject json = JSONUtil.readJsonFromUrl(url);
 		JSONArray versions = json.getJSONArray("versions");
-		releaseNames = new HashMap<LocalDateTime, String>();
-		releaseID = new HashMap<LocalDateTime, String> ();
+		
 		for (i = 0; i < versions.length(); i++ ) {
 			String name = "";
 			String id = "";
+			String releaseDate = "";
 			if(versions.getJSONObject(i).has("releaseDate")) {
 				if (versions.getJSONObject(i).has("name"))
 					name = versions.getJSONObject(i).get("name").toString();
 				if (versions.getJSONObject(i).has("id"))
 					id = versions.getJSONObject(i).get("id").toString();
-				addRelease(versions.getJSONObject(i).get("releaseDate").toString(),
-						name,id);
+				releaseDate = versions.getJSONObject(i).get("releaseDate").toString();
+				LocalDate date = LocalDate.parse(releaseDate);
+				LocalDateTime dateTime = date.atStartOfDay();
+				versionList.add(new Version(id, name, dateTime));
+				//addRelease(versions.getJSONObject(i).get("releaseDate").toString(),name,id);
 			}
 		}
 		// order releases by date
-		Collections.sort(releases, new Comparator<LocalDateTime>(){
+		//Collections.sort(releases, new Comparator<LocalDateTime>(){
 			//@Override
-			public int compare(LocalDateTime o1, LocalDateTime o2) {
-				return o1.compareTo(o2);
-			}
-		});
-		if (releases.size() < 6)
-			return;
+		//	public int compare(LocalDateTime o1, LocalDateTime o2) {
+		//		return o1.compareTo(o2);
+		//	}
+		//});
+		//if (releases.size() < 6)
+		//	return;
 		FileWriter fileWriter = null;
 		try {
 			fileWriter = null;
@@ -63,16 +74,16 @@ public class DataExtractor {
 			fileWriter = new FileWriter(outname);
 			fileWriter.append("Index,Version ID,Version Name,Date");
 			fileWriter.append("\n");
-			numVersions = releases.size();
-			for ( i = 0; i < releases.size(); i++) {
+			numVersions = versionList.size();
+			for ( i = 0; i < numVersions; i++) {
 				Integer index = i + 1;
 				fileWriter.append(index.toString());
 				fileWriter.append(",");
-				fileWriter.append(releaseID.get(releases.get(i)));
+				fileWriter.append(versionList.get(i).getId());
 				fileWriter.append(",");
-				fileWriter.append(releaseNames.get(releases.get(i)));
+				fileWriter.append(versionList.get(i).getName());
 				fileWriter.append(",");
-				fileWriter.append(releases.get(i).toString());
+				fileWriter.append(versionList.get(i).getDate().toString());
 				fileWriter.append("\n");
 			}
 
@@ -119,11 +130,15 @@ public class DataExtractor {
 			JSONObject newJson = JSONUtil.readJsonFromUrl(newUrl);
 			JSONArray issues = newJson.getJSONArray("issues");
 			for (; i < total; i++) {
-				//Iterate through each bug and print id
+				//Iterate through each bug and print the key
 				String key = issues.getJSONObject(i%1000).get("key").toString();
 				System.out.println(key);
 			}  
 		} while (i < total);
 		return;
+	}
+	
+	public static void createCSV(String projName) {
+		//TODO devo prendere i ticket e tutti i adti per costruire il csv
 	}
 }
