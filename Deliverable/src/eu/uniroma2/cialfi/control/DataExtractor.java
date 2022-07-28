@@ -1,11 +1,5 @@
 package eu.uniroma2.cialfi.control;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import eu.uniroma2.cialfi.util.JSONutil;
+import eu.uniroma2.cialfi.util.JSONUtil;
 
 
 public class DataExtractor {
@@ -36,7 +30,7 @@ public class DataExtractor {
 		Integer i;
 		String url = "https://issues.apache.org/jira/rest/api/2/project/" + projName;
 
-		JSONObject json = JSONutil.readJsonFromUrl(url);
+		JSONObject json = JSONUtil.readJsonFromUrl(url);
 		JSONArray versions = json.getJSONArray("versions");
 		releaseNames = new HashMap<LocalDateTime, String>();
 		releaseID = new HashMap<LocalDateTime, String> ();

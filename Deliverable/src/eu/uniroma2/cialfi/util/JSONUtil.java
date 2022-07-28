@@ -11,8 +11,9 @@ import java.nio.charset.Charset;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class JSONutil {
+public class JSONUtil {
 
+	//returns a json object containing the page 
 	public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
 		InputStream is = new URL(url).openStream();
 		try {
