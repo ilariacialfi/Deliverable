@@ -29,7 +29,7 @@ public class DataExtractor {
 	public static void main(String[] args) throws IOException, JSONException {
 		   
 		   String projName ="BOOKKEEPER";
-		   
+		   //VEDIAMO SE FUNZIONA
 		   //Fills the arraylist with releases dates and orders them
 		   //Ignores releases with missing dates
 		   releases = new ArrayList<LocalDateTime>();
