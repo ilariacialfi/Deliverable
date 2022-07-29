@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -72,7 +71,7 @@ public class DataExtractor {
 	public static List<Ticket> extractTicket(String projName, List<Version> versionList) throws JSONException, IOException {
 
 		List<Ticket> ticketList = new ArrayList<>();
-		
+
 		Integer i = 0, total = 1, j = 0;
 		String key, dateStr;
 		LocalDateTime dateTime = null;
@@ -85,60 +84,60 @@ public class DataExtractor {
 				+ "%22status%22=%22resolved%22)AND%22resolution%22=%22fixed%22&fields=key,resolutiondate,versions,created";
 		JSONObject json = JSONUtil.readJsonFromUrl(url);
 		total = json.getInt("total");
+		String newUrl = url + "&startAt=0&maxResults=" + total;
 
-		//Get JSON API for closed bugs w/ AV in the project
-		do {
-			String newUrl = url + "&startAt=" + i.toString() + "&maxResults=" + total;
-			JSONObject newJson = JSONUtil.readJsonFromUrl(newUrl);
-			JSONArray issues = newJson.getJSONArray("issues");
-			JSONObject fields = issues.getJSONObject(i).getJSONObject("fields");
+		JSONObject newJson = JSONUtil.readJsonFromUrl(newUrl);
+		JSONArray issues = newJson.getJSONArray("issues");
+		
+		//Iterate through each issue
+		for (i=0; i < total; i++) {
+			
+			JSONObject fields = issues.getJSONObject(i%1000).getJSONObject("fields");
 			JSONArray versions = fields.getJSONArray("versions");
-
-			//Iterate through each issue
-			for (; i < total; i++) {
-				//ticket key
-				key = issues.getJSONObject(i%1000).get("key").toString();
-				//System.out.println(key);
-				//fixed version
-				if(fields.has("resolutiondate")) {
-					dateStr = fields.get("resolutiondate").toString();
-					dateStr = dateStr.substring(0, dateStr.length()-12);
-					dateTime = LocalDateTime.parse(dateStr);
+			//ticket key
+			key = issues.getJSONObject(i%1000).get("key").toString();
+			//System.out.println(key);
+			//fixed version
+			if(fields.has("resolutiondate")) {
+				dateStr = fields.get("resolutiondate").toString();
+				dateStr = dateStr.substring(0, dateStr.length()-12);
+				dateTime = LocalDateTime.parse(dateStr);
+				for (Version v : versionList) {
+					if (v.getDate().isAfter(dateTime)) {
+						fv = v;
+					}
+				}
+			}
+			//opening version
+			if (fields.has("created")) {
+				dateStr = fields.get("created").toString();
+				dateStr = dateStr.substring(0, dateStr.length()-12);
+				dateTime = LocalDateTime.parse(dateStr);
+				//find opening version after this date
+				for (Version v : versionList) {
+					if (v.getDate().isAfter(dateTime)) {
+						ov = v;
+					}
+				}
+			}
+			//affected versions list
+			for (j=0; j < versions.length(); j++) {
+				System.out.println("iter " + i + " lenght = " + versions.length());
+				if(versions.getJSONObject(j).has("id")) {
+					//find version by id
 					for (Version v : versionList) {
-						if (v.getDate().isAfter(dateTime)) {
-							fv = v;
+						if (v.getId().equals(versions.getJSONObject(j).get("id"))) {
+							System.out.println(v.getId());
+							avList.add(v);
 						}
 					}
 				}
-				//opening version
-				if (fields.has("created")) {
-					dateStr = fields.get("created").toString();
-					dateStr = dateStr.substring(0, dateStr.length()-12);
-					dateTime = LocalDateTime.parse(dateStr);
-					//find opening version after this date
-					for (Version v : versionList) {
-						if (v.getDate().isAfter(dateTime)) {
-							ov = v;
-						}
-					}
-				}
-				//affected versions list
-				for (; j < versions.length(); j++) {
-					if(versions.getJSONObject(j).has("id")) {
-						//find version by id
-						for (Version v : versionList) {
-							if (v.getId().equals(versions.getJSONObject(j).get("id"))) {
-								avList.add(v);
-							}
-						}
-					}
-				}
+			}
 
 
-				Ticket ticket = new Ticket(key, ov, fv, avList);
-				ticketList.add(ticket);
-			}  
-		} while (i < total);
+			Ticket ticket = new Ticket(key, ov, fv, avList);
+			ticketList.add(ticket);
+		}  
 		return ticketList;
 	}
 
@@ -202,7 +201,7 @@ public class DataExtractor {
 	}
 
 	private static List<String> getBuggyVersions(List<Ticket> ticketList, List<Version> versionList) {
-		
+
 		List<Version> partialList = new ArrayList<>(); 
 		List<String> listWithDup =  new ArrayList<>();
 		List<String> listWithoutDup = new ArrayList<>();
@@ -216,6 +215,7 @@ public class DataExtractor {
 			}
 		}
 
+		//remove duplicates
 		for (String s : listWithDup) {
 			if (uniqueValues.add(s)) {
 				listWithoutDup.add(s);
