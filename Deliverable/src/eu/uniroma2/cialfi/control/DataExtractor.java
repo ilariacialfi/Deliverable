@@ -3,13 +3,12 @@ import java.io.IOException;
 import java.io.FileWriter;
 import java.util.List;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -27,10 +26,10 @@ public class DataExtractor {
 	//this method extracts all the versions of the project
 	public static List<Version> extractVersion(String projName) throws IOException, JSONException{
 
+		List<Version> versionList = new ArrayList<>();
 		Map<LocalDateTime, String> preVersionMap = new HashMap<>();
 		Map<LocalDateTime, String> preIdMap = new HashMap<>();
-		List<Version> versionList = new ArrayList<>();
-		
+
 		Integer i;
 		String name = "";
 		String id = "";
@@ -70,18 +69,15 @@ public class DataExtractor {
 	}
 
 	//this method extracts tickets concerning bugs that are closed or resolved
-	public static List<Ticket> extractTicket(String projName) throws JSONException, IOException {
+	public static List<Ticket> extractTicket(String projName, List<Version> versionList) throws JSONException, IOException {
 
+		List<Ticket> ticketList = new ArrayList<>();
+		
 		Integer i = 0, total = 1, j = 0;
-		String key, dateStr, name = "", id = "", releaseDate = "";
-		LocalDate date;
+		String key, dateStr;
 		LocalDateTime dateTime = null;
 		Version fv = null, ov = null;
 		List<Version> avList = new ArrayList<>();
-		List<Ticket> ticketList = new ArrayList<>();
-
-		//collect all the versions available
-		List<Version> versionList = extractVersion(projName);
 
 		//extract the total number of tickets
 		String url = "https://issues.apache.org/jira/rest/api/2/search?jql=project=%22"
@@ -150,12 +146,13 @@ public class DataExtractor {
 	 * Index,Version ID,Version Name,Date,Buggy
 	 */
 	public static void createCSV(String projName) throws IOException, JSONException {
-		//TODO devo prendere i ticket e tutti i dati per costruire il csv
 		Integer i,numVersions;
 		FileWriter fileWriter = null;
 
 		List<Version> versionList = extractVersion(projName);
-		List<Ticket> ticketList = extractTicket(projName);
+		List<Ticket> ticketList = extractTicket(projName, versionList);
+		List<String> bugList = getBuggyVersions(ticketList, versionList);
+
 		try {
 			fileWriter = null;
 			String outname = projName + "VersionInfo.csv";
@@ -166,15 +163,27 @@ public class DataExtractor {
 			numVersions = versionList.size();
 			for ( i = 0; i < numVersions; i++) {
 				Integer index = i + 1;
+				String id = versionList.get(i).getId();
+				String name = versionList.get(i).getName();
+				LocalDateTime date = versionList.get(i).getDate();
+				String bugginess = "";
+
+				if (bugList.contains(id)) {
+					bugginess = "yes";
+				} else {
+					bugginess = "no";
+				}
+
 				fileWriter.append(index.toString());
 				fileWriter.append(",");
-				fileWriter.append(versionList.get(i).getId());
+				fileWriter.append(id);
 				fileWriter.append(",");
-				fileWriter.append(versionList.get(i).getName());
+				fileWriter.append(name);
 				fileWriter.append(",");
-				fileWriter.append(versionList.get(i).getDate().toString());
+				fileWriter.append(date.toString());
+				fileWriter.append(",");
+				fileWriter.append(bugginess);
 				fileWriter.append("\n");
-				//if version is an av for any ticket set buggy = 'yes'
 			}
 
 		} catch (Exception e) {
@@ -190,5 +199,29 @@ public class DataExtractor {
 			}
 		}
 		return;
+	}
+
+	private static List<String> getBuggyVersions(List<Ticket> ticketList, List<Version> versionList) {
+		
+		List<Version> partialList = new ArrayList<>(); 
+		List<String> listWithDup =  new ArrayList<>();
+		List<String> listWithoutDup = new ArrayList<>();
+		Set<String> uniqueValues = new HashSet<>();
+
+		//took av for all the tickets
+		for (Ticket t : ticketList) {
+			partialList = t.getAv();
+			for (Version av : partialList) {
+				listWithDup.add(av.getId());
+			}
+		}
+
+		for (String s : listWithDup) {
+			if (uniqueValues.add(s)) {
+				listWithoutDup.add(s);
+			}
+		}
+		System.out.println(listWithoutDup);
+		return listWithoutDup;
 	}
 }
