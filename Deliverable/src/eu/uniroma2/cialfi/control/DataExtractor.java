@@ -42,19 +42,19 @@ public class DataExtractor {
 		JSONArray versions = json.getJSONArray("versions");
 
 		for (i = 0; i < versions.length(); i++ ) {
-
-			if(versions.getJSONObject(i).has("releaseDate")) {
-				if (versions.getJSONObject(i).has("name"))
-					name = versions.getJSONObject(i).get("name").toString();
-				if (versions.getJSONObject(i).has("id"))
-					id = versions.getJSONObject(i).get("id").toString();
-				if (versions.getJSONObject(i).has("releaseDate")) {
-					releaseDate = versions.getJSONObject(i).get("releaseDate").toString();
-					date = LocalDate.parse(releaseDate);
-					dateTime = date.atStartOfDay();
-				}
+			//extract only versions with releaseDate
+			try {
+				name = versions.getJSONObject(i).get("name").toString();
+				id = versions.getJSONObject(i).get("id").toString();
+				releaseDate = versions.getJSONObject(i).get("releaseDate").toString();
+				date = LocalDate.parse(releaseDate);
+				dateTime = date.atStartOfDay();
+				
 				preVersionMap.put(dateTime, name);
 				preIdMap.put(dateTime, id);
+				
+			} catch(Exception e) {
+				//try next release
 			}
 		}
 		//order versions by date
@@ -71,12 +71,12 @@ public class DataExtractor {
 	public static List<Ticket> extractTicket(String projName, List<Version> versionList) throws JSONException, IOException {
 
 		List<Ticket> ticketList = new ArrayList<>();
+		List<Version> avList = new ArrayList<>();
 
 		Integer i = 0, total = 1, j = 0;
 		String key, dateStr;
 		LocalDateTime dateTime = null;
 		Version fv = null, ov = null;
-		List<Version> avList = new ArrayList<>();
 
 		//extract the total number of tickets
 		String url = "https://issues.apache.org/jira/rest/api/2/search?jql=project=%22"
@@ -94,26 +94,28 @@ public class DataExtractor {
 			
 			JSONObject fields = issues.getJSONObject(i%1000).getJSONObject("fields");
 			JSONArray versions = fields.getJSONArray("versions");
+			
 			//ticket key
 			key = issues.getJSONObject(i%1000).get("key").toString();
-			//System.out.println(key);
-			//fixed version
+
+			//fixed version = version after bug resolution
 			if(fields.has("resolutiondate")) {
 				dateStr = fields.get("resolutiondate").toString();
 				dateStr = dateStr.substring(0, dateStr.length()-12);
 				dateTime = LocalDateTime.parse(dateStr);
+				//find version after this date
 				for (Version v : versionList) {
 					if (v.getDate().isAfter(dateTime)) {
 						fv = v;
 					}
 				}
 			}
-			//opening version
+			//opening version = version after ticket creation
 			if (fields.has("created")) {
 				dateStr = fields.get("created").toString();
 				dateStr = dateStr.substring(0, dateStr.length()-12);
 				dateTime = LocalDateTime.parse(dateStr);
-				//find opening version after this date
+				//find version after this date
 				for (Version v : versionList) {
 					if (v.getDate().isAfter(dateTime)) {
 						ov = v;
@@ -122,21 +124,21 @@ public class DataExtractor {
 			}
 			//affected versions list
 			for (j=0; j < versions.length(); j++) {
-				System.out.println("iter " + i + " lenght = " + versions.length());
 				if(versions.getJSONObject(j).has("id")) {
 					//find version by id
 					for (Version v : versionList) {
 						if (v.getId().equals(versions.getJSONObject(j).get("id"))) {
-							System.out.println(v.getId());
 							avList.add(v);
 						}
 					}
 				}
 			}
 
-
-			Ticket ticket = new Ticket(key, ov, fv, avList);
-			ticketList.add(ticket);
+			if (fv != null && ov != null) {
+				Ticket ticket = new Ticket(key, ov, fv, avList);
+				ticketList.add(ticket);
+			}
+			
 		}  
 		return ticketList;
 	}
