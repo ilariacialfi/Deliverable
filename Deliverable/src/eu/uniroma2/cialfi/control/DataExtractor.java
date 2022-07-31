@@ -49,10 +49,10 @@ public class DataExtractor {
 				releaseDate = versions.getJSONObject(i).get("releaseDate").toString();
 				date = LocalDate.parse(releaseDate);
 				dateTime = date.atStartOfDay();
-				
+
 				preVersionMap.put(dateTime, name);
 				preIdMap.put(dateTime, id);
-				
+
 			} catch(Exception e) {
 				//try next release
 			}
@@ -71,10 +71,10 @@ public class DataExtractor {
 	public static List<Ticket> extractTicket(String projName, List<Version> versionList) throws JSONException, IOException {
 
 		List<Ticket> ticketList = new ArrayList<>();
-		List<Version> avList = new ArrayList<>();
+		
 
 		Integer i = 0, total = 1, j = 0;
-		String key, dateStr;
+		String key, dateStr, id;
 		LocalDateTime dateTime = null;
 		Version fv = null, ov = null;
 
@@ -88,13 +88,16 @@ public class DataExtractor {
 
 		JSONObject newJson = JSONUtil.readJsonFromUrl(newUrl);
 		JSONArray issues = newJson.getJSONArray("issues");
-		
+
 		//Iterate through each issue
-		for (i=0; i < total; i++) {
+		for (; i < total; i++) {
 			
+			List<Version> avList = new ArrayList<>();
+			Map<LocalDateTime, String> preAVMap = new HashMap<>();
+
 			JSONObject fields = issues.getJSONObject(i%1000).getJSONObject("fields");
 			JSONArray versions = fields.getJSONArray("versions");
-			
+
 			//ticket key
 			key = issues.getJSONObject(i%1000).get("key").toString();
 
@@ -124,21 +127,35 @@ public class DataExtractor {
 			}
 			//affected versions list
 			for (j=0; j < versions.length(); j++) {
-				if(versions.getJSONObject(j).has("id")) {
+				try {
+					id = versions.getJSONObject(j).get("id").toString();
 					//find version by id
 					for (Version v : versionList) {
-						if (v.getId().equals(versions.getJSONObject(j).get("id"))) {
-							avList.add(v);
+						if (v.getId().equals(id)) {
+							preAVMap.put(v.getDate(), id);
 						}
 					}
+				} catch(Exception e) {
 				}
 			}
+
+			//order affected version list
+			Map <LocalDateTime, String> avMap = new TreeMap<>(preAVMap);
+			for (Map.Entry<LocalDateTime, String> entry : avMap.entrySet()) {
+				String name = avMap.get(entry.getKey());
+				avList.add(new Version(entry.getValue(), name, entry.getKey()));
+			}
+
+			//pick initial affected version list
+
+			//replace avList with a complete list with each version
+			//between initial av and opening version (included)
 
 			if (fv != null && ov != null) {
 				Ticket ticket = new Ticket(key, ov, fv, avList);
 				ticketList.add(ticket);
 			}
-			
+
 		}  
 		return ticketList;
 	}
@@ -153,6 +170,17 @@ public class DataExtractor {
 		List<Version> versionList = extractVersion(projName);
 		List<Ticket> ticketList = extractTicket(projName, versionList);
 		List<String> bugList = getBuggyVersions(ticketList, versionList);
+
+		int k = 1;
+		for (Ticket t: ticketList) {
+			System.out.println("\nticket " + k );
+			//Ticket t = ticketList.get(0);
+			for (Version v : t.getAv()) {
+				System.out.println("version id: " + v.getId() +
+						" version date: " + v.getDate());
+			}
+			k++;
+		}
 
 		try {
 			fileWriter = null;

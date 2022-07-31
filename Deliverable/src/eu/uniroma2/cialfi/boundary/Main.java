@@ -10,7 +10,7 @@ public class Main {
 	public static void main(String[] args) throws IOException, JSONException {
 		
 		DataExtractor.createCSV("BOOKKEEPER");
-		DataExtractor.createCSV("ZOOKEEPER");
+		//DataExtractor.createCSV("ZOOKEEPER");
 
 	}
 
