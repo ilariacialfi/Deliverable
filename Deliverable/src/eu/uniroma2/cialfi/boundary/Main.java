@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import org.json.JSONException;
 
-import eu.uniroma2.cialfi.control.DataExtractor;
+import eu.uniroma2.cialfi.control.DataExtractorJira;
 public class Main {
 
 	public static void main(String[] args) throws IOException, JSONException {
 		
-		DataExtractor.createCSV("BOOKKEEPER");
-		//DataExtractor.createCSV("ZOOKEEPER");
+		DataExtractorJira.createCSV("BOOKKEEPER");
+		DataExtractorJira.createCSV("ZOOKEEPER");
 
 	}
 

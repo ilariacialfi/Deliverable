@@ -20,7 +20,7 @@ import eu.uniroma2.cialfi.entity.Version;
 import eu.uniroma2.cialfi.util.JSONUtil;
 
 
-public class DataExtractor {
+public class DataExtractorJira {
 
 	/*this method creates a csv file with these columns:
 	 * Index,Version ID,Version Name,Date,Buggy
@@ -90,9 +90,9 @@ public class DataExtractor {
 		try {
 			//Name of CSV for output
 			fileWriter = new FileWriter(outname);
-
+			
+			fileWriter.append("Versions\n");
 			for (Version v : versionList) {
-				fileWriter.append("Versions\n");
 				fileWriter.append(v.getDate().toString());
 				fileWriter.append("\n");
 			}
