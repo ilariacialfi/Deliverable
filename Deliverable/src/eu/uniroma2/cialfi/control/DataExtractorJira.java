@@ -90,7 +90,7 @@ public class DataExtractorJira {
 		try {
 			//Name of CSV for output
 			fileWriter = new FileWriter(outname);
-			
+
 			fileWriter.append("Versions\n");
 			for (Version v : versionList) {
 				fileWriter.append(v.getDate().toString());
@@ -264,8 +264,7 @@ public class DataExtractorJira {
 
 		//pick first affected version 
 		Version firstAV = null;
-		LocalDateTime firstDate = LocalDateTime.parse("1000-01-01T01:01");
-		LocalDateTime nullDate = LocalDateTime.parse("1000-01-01T01:01");
+		LocalDateTime firstDate = null;
 		if (!avList.isEmpty()) {
 			firstAV = avList.get(0);
 			firstDate = firstAV.getDate();
@@ -273,7 +272,7 @@ public class DataExtractorJira {
 
 		//check: first AV < OV else first AV = OV
 		LocalDateTime ovDate = ov.getDate();
-		if (firstDate.isEqual(nullDate) || ovDate.isBefore(firstDate)) {
+		if (firstDate == null || ovDate.isBefore(firstDate)) {	
 			firstDate = ovDate;
 			firstAV = ov;
 		} 
