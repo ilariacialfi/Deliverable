@@ -20,7 +20,7 @@ import eu.uniroma2.cialfi.entity.Version;
 import eu.uniroma2.cialfi.util.JSONUtil;
 
 
-public class DataExtractorJira {
+public class JiraDataExtractor {
 
 	/*this method creates a csv file with these columns:
 	 * Index,Version ID,Version Name,Date,Buggy
@@ -84,6 +84,7 @@ public class DataExtractorJira {
 		return;
 	}
 
+	//TODO PROVA
 	private static void printResults(List<Version> versionList, List<Ticket> ticketList) {
 		FileWriter fileWriter = null;
 		String outname = "Results.csv";
@@ -137,7 +138,7 @@ public class DataExtractorJira {
 			LocalDate date;
 			LocalDateTime dateTime = null;
 
-			//extract only versions with releaseDate
+			//extract only versions with name, id, releaseDate
 			try {
 				name = versions.getJSONObject(i).get("name").toString();
 				id = versions.getJSONObject(i).get("id").toString();
@@ -149,7 +150,7 @@ public class DataExtractorJira {
 				preIdMap.put(dateTime, id);
 
 			} catch(Exception e) {
-				//try next release
+				//try next 
 			}
 		}
 		//order versions by date
@@ -277,15 +278,6 @@ public class DataExtractorJira {
 			firstAV = ov;
 		} 
 
-		//find first affected version index
-		int count = -1;
-		for (int i = 0; i < versionList.size(); i++) {
-			Version v = versionList.get(i);
-			if (v.getDate().equals(firstDate)) {
-				count = i;
-			}
-		}
-
 		//set last AV = FV-1
 		LocalDateTime fvDate = fv.getDate();
 		LocalDateTime lastDate = null;
@@ -300,31 +292,37 @@ public class DataExtractorJira {
 			}
 		}
 
-		//check: OV < last AV 
-
+		//check: OV < last AV = FV-1
 		if (lastDate != null && ovDate.isAfter(lastDate)) {
+			//OV is forced to be FV-1
 			ovDate = lastDate;
 		} else {
 			lastDate = ovDate;
 		}
 
-
+		//find first affected version index
+		int versionIndex = -1;
+		for (int i = 0; i < versionList.size(); i++) {
+			Version v = versionList.get(i);
+			if (v.getDate().equals(firstDate)) {
+				versionIndex = i;
+			}
+		}
 		//replace avList with a complete list with each version
-		//between initial av and fixed version (not included)
+		//between initial AV and FV (not included)
 		avListComplete.add(firstAV);
-		count++;
-		System.out.println(count);
-		while (count != -1 && count < versionList.size()) {
-			LocalDateTime versDate = versionList.get(count).getDate();
+		versionIndex++;
+		while (versionIndex != -1 && versionIndex < versionList.size()) {
+			LocalDateTime versDate = versionList.get(versionIndex).getDate();
 
 			if (versDate.isBefore(lastDate)) {
-				avListComplete.add(versionList.get(count));
-				count++;
+				avListComplete.add(versionList.get(versionIndex));
+				versionIndex++;
 			} else if (versDate.isEqual(lastDate)){
 				avListComplete.add(lastAV);
-				count = -1;
+				versionIndex = -1;
 			} else {
-				count = -1;
+				versionIndex = -1;
 			}
 		}
 		return avListComplete;
