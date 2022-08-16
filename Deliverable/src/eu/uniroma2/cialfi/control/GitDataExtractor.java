@@ -17,48 +17,39 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
-import eu.uniroma2.cialfi.boundary.Main;
 import org.apache.commons.io.FileUtils;
 
 public class GitDataExtractor {
 	static Logger logger = Logger.getLogger(GitDataExtractor.class.getName());
-	
-	private GitDataExtractor() {
-		
-	}
-
 
 	public static void getCommit(String projName) throws IOException, GitAPIException{
 		String repoURI = "https://github.com/apache/" + projName + ".git";
-		Repository repo = null; 
-		List<Ref> branches;
-		//RevWalk walk;
-		Git git;
-		Collection<File> javaFiles = new ArrayList<>();
+		
+		Collection<File> javaFiles;
 
-
-		//clone project repository from git
-		File dir = new File(projName);
-		if (!dir.exists()) {
-			logger.log(Level.INFO, "Cloning repository " + projName);
-			try {
-				FileUtils.deleteDirectory(dir);
-				Git.cloneRepository().setURI(repoURI).setDirectory(dir).call();
-			} catch (Exception e) {}
-		} else {
-			logger.log(Level.INFO, "Repository " + projName + " already cloned");
-		}
-
+		//clone project repository from Git
+		cloneRepo(projName, repoURI);
 		//list all java files	
-		logger.log(Level.INFO, "Java Files List of " + projName);
-		//javaFiles = FilesUtil.ListJavaFiles(dir);
+		javaFiles = listJavaFiles(projName);
+		//TODO devo andare a vedere quali file vengono modificati da commmit riguardanti risoluzione di bug
+		
+	}
+
+	private static Collection<File> listJavaFiles(String projName) throws IOException, GitAPIException {
+		logger.log(Level.INFO, "Java Files List of {0}", projName);
+		
+		List<Ref> branches;
+		File dir = new File(projName);
+		Collection<File> javaFiles = new ArrayList<>();
+		Repository repo = new FileRepository(projName + "/.git");
+		Git git = new Git(repo);
+		
 		javaFiles = FileUtils.listFiles(dir, new String[] {"java"}, true);
 		for (File f : javaFiles) {
 			logger.log(Level.INFO, f.getPath());
 		}
 
-		repo = new FileRepository(projName + "/.git");
-		git = new Git(repo);
+	
 		try {
 			//walk = new RevWalk(repo);
 			branches = git.branchList().call();
@@ -66,7 +57,7 @@ public class GitDataExtractor {
 			for (Ref branch : branches) {
 				String treeName = branch.getName();
 
-				logger.log(Level.INFO, "Commits of branch: " + branch.getName());
+				logger.log(Level.INFO, "Commits of branch: {0}", branch.getName());
 				logger.log(Level.INFO, "-------------------------------------");
 
 				for (RevCommit commit : git.log().add(repo.resolve(treeName)).call()) {
@@ -75,6 +66,20 @@ public class GitDataExtractor {
 			}
 		} finally {
 			git.close();
+		}
+		return javaFiles;
+	}
+
+	private static void cloneRepo(String projName, String repoURI) {
+		File dir = new File(projName);
+		if (!dir.exists()) {
+			logger.log(Level.INFO, "Cloning repository {0}", projName);
+			try {
+				FileUtils.deleteDirectory(dir);
+				Git.cloneRepository().setURI(repoURI).setDirectory(dir).call();
+			} catch (Exception e) {}
+		} else {
+			logger.log(Level.INFO, "Repository {0} already cloned", projName);
 		}
 	}
 }

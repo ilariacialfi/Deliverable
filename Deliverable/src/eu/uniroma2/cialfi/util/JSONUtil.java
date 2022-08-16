@@ -6,15 +6,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import eu.uniroma2.cialfi.boundary.Main;
 
 public class JSONUtil {
 	static Logger logger = Logger.getLogger(JSONUtil.class.getName());
@@ -26,6 +23,7 @@ public class JSONUtil {
 		try (BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))){
 			jsonText = readAll(rd);
 		} catch (Exception e) {
+			//Exception
 		}
 		return new JSONObject(jsonText);
 	}
@@ -36,6 +34,7 @@ public class JSONUtil {
 		try (BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))){
 			jsonText = readAll(rd);
 		} catch (Exception e) {
+			//Exception
 		}
 		return new JSONArray(jsonText);
 	}
