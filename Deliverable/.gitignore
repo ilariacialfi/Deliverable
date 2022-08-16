@@ -1,4 +1,6 @@
 target/
+BOOKKEEPER/
+ZOOKEEPER/
 # Eclipse m2e generated files
 # Eclipse Core
 .project

@@ -1,8 +1,8 @@
 package eu.uniroma2.cialfi.util;
 
-public enum Projects {
+public enum ProjectsEnum{
 
 	BOOKKEEPER,
-	ZOOKEEPER
+	//ZOOKEEPER
 
 }

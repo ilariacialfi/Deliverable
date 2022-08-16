@@ -9,7 +9,7 @@ import org.json.JSONException;
 
 import eu.uniroma2.cialfi.control.GitDataExtractor;
 import eu.uniroma2.cialfi.control.JiraDataExtractor;
-import eu.uniroma2.cialfi.util.Projects;
+import eu.uniroma2.cialfi.util.ProjectsEnum;
 public class Main {
 
 	public static void main(String[] args) throws IOException, JSONException, InvalidRemoteException, TransportException, GitAPIException {
@@ -17,7 +17,7 @@ public class Main {
 		//TODO per ora faccio estrarre i dati, poi probabilmente devo modificare questa
 		//funzione in modo che restituisca il path al csv da passe a weka?
 		//o forse weka va utilizzato esternamente e manualmente?
-		for (Projects p : Projects.values()) {
+		for (ProjectsEnum p : ProjectsEnum.values()) {
 			System.out.println("Creating CSV file ...");
 			JiraDataExtractor.createCSV(p.toString());
 			System.out.println("Importing commits ...");
