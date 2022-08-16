@@ -22,8 +22,8 @@ import eu.uniroma2.cialfi.util.JSONUtil;
 
 public class JiraDataExtractor {
 
-	/*this method creates a csv file with these columns:
-	 * Index,Version ID,Version Name,Date,Buggy
+	/*This method creates a csv file with these columns:
+	 *Index,Version ID,Version Name,Date,Buggy
 	 */
 	public static void createCSV(String projName) throws IOException, JSONException {
 		Integer i,numVersions;
@@ -198,7 +198,6 @@ public class JiraDataExtractor {
 				//find version after this date
 				for (Version v : versionList) {
 					if (v.getDate().isAfter(dateTime) || v.getDate().isEqual(dateTime)) {
-						System.out.println("ticket: " + key + " fv: " + v.getDate());
 						fv = v;
 						break;
 					}
@@ -214,7 +213,6 @@ public class JiraDataExtractor {
 				//find version after this date
 				for (Version v : versionList) {
 					if (v.getDate().isAfter(dateTime) || v.getDate().isEqual(dateTime)) {
-						System.out.println("ticket: " + key + " ov: " + v.getDate());
 						ov = v;
 						break;
 					}
@@ -227,11 +225,7 @@ public class JiraDataExtractor {
 				avList = getAffectedVersions(versions, ov, fv, versionList);
 				Ticket ticket = new Ticket(key, ov, fv, avList);
 				ticketList.add(ticket);
-			} else {
-				//TODO rimuovi questo else
-				System.out.println("esiste un ticket senza fv o ov");
-			}
-
+			} 
 		}  
 		return ticketList;
 	}
@@ -354,7 +348,7 @@ public class JiraDataExtractor {
 				listWithoutDup.add(s);
 			}
 		}
-		System.out.println(listWithoutDup);
+	
 		return listWithoutDup;
 	}
 }
