@@ -19,17 +19,5 @@
     <sonar.organization>ilariacialfi</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
-  <dependencies>
-  	<dependency>
-  		<groupId>org.eclipse.jgit</groupId>
-  		<artifactId>org.eclipse.jgit</artifactId>
-  		<version>6.2.0.202206071550-r</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>commons-io</groupId>
-  		<artifactId>commons-io</artifactId>
-  		<version>2.6</version>
-  	</dependency>
 
-  </dependencies>
 </project>
