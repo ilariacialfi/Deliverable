@@ -15,6 +15,10 @@
       </plugin>
     </plugins>
   </build>
+  <properties>
+    <sonar.organization>ilariacialfi</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+  </properties>
   <dependencies>
   	<dependency>
   		<groupId>org.eclipse.jgit</groupId>

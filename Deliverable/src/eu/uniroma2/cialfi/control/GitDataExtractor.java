@@ -29,7 +29,6 @@ public class GitDataExtractor {
 		List<Ref> branches;
 		RevWalk walk;
 		Git git;
-		FileRepositoryBuilder builder = new FileRepositoryBuilder();
 		Collection<File> javaFiles = new ArrayList<>();
 
 
@@ -55,7 +54,7 @@ public class GitDataExtractor {
 
 		repo = new FileRepository(projName + "/.git");
 		git = new Git(repo);
-		walk = new RevWalk(repo);
+		//walk = new RevWalk(repo);
 		branches = git.branchList().call();
 		//list all commits of all branches
 		for (Ref branch : branches) {
@@ -70,6 +69,7 @@ public class GitDataExtractor {
 
 			return;
 		}
+		git.close();
 
 	}
 }
