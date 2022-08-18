@@ -1,7 +1,0 @@
-organization=ilariacialfi
-projectKey=ilariacialfi_ISW2
-serverUrl=https://sonarcloud.io
-serverVersion=8.0.0.31186
-dashboardUrl=https://sonarcloud.io/dashboard?id=ilariacialfi_ISW2
-ceTaskId=AYKxWFv8nmKDUVKqdPfw
-ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AYKxWFv8nmKDUVKqdPfw
